@@ -1,0 +1,9 @@
+<settings>
+    <category label="Configuración">
+        <setting id="base_url"
+                 type="text"
+                 label="Base URL del backend"
+                 default="http://localhost:8080"
+                 tooltip="URL base donde está corriendo tu backend (por ejemplo, http://localhost:8080)"/>
+    </category>
+</settings>
