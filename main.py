@@ -19,11 +19,11 @@ def fetch_metadata():
         response.raise_for_status()
         return response.json()
     except requests.exceptions.Timeout:
-        xbmcgui.Dialog().notification("Timeout", "El servidor no respondió a tiempo", xbmcgui.NOTIFICATION_ERROR)
+        xbmcgui.Dialog().notification("Timeout", "The server did not respond in time", xbmcgui.NOTIFICATION_ERROR)
     except requests.exceptions.ConnectionError:
-        xbmcgui.Dialog().notification("Conexión fallida", "No se pudo conectar al backend", xbmcgui.NOTIFICATION_ERROR)
+        xbmcgui.Dialog().notification("Connection failed", "Could not connect to the backend", xbmcgui.NOTIFICATION_ERROR)
     except Exception as e:
-        xbmcgui.Dialog().notification("Error", f"Error al obtener metadata: {e}", xbmcgui.NOTIFICATION_ERROR)
+        xbmcgui.Dialog().notification("Error", f"Error fetching metadata: {e}", xbmcgui.NOTIFICATION_ERROR)
     return []
 
 def fetch_m3u8(endpoint):
@@ -32,43 +32,43 @@ def fetch_m3u8(endpoint):
         response.raise_for_status()
         return response.text
     except requests.exceptions.Timeout:
-        xbmcgui.Dialog().notification("Timeout", "El servidor no respondió al pedir el stream", xbmcgui.NOTIFICATION_ERROR)
+        xbmcgui.Dialog().notification("Timeout", "The server did not respond when requesting the stream", xbmcgui.NOTIFICATION_ERROR)
     except requests.exceptions.ConnectionError:
-        xbmcgui.Dialog().notification("Conexión fallida", "No se pudo conectar al backend", xbmcgui.NOTIFICATION_ERROR)
+        xbmcgui.Dialog().notification("Connection failed", "Could not connect to the backend", xbmcgui.NOTIFICATION_ERROR)
     except Exception as e:
-        xbmcgui.Dialog().notification("Error", f"No se pudo obtener el stream: {e}", xbmcgui.NOTIFICATION_ERROR)
+        xbmcgui.Dialog().notification("Error", f"Could not fetch the stream: {e}", xbmcgui.NOTIFICATION_ERROR)
     return ""
 
 def refresh_sources():
     try:
         response = requests.post(f'{BASE_URL}/assets/refresh', timeout=5)
         if response.status_code == 202:
-            xbmcgui.Dialog().notification("Actualización iniciada", "Scraping en curso...", xbmcgui.NOTIFICATION_INFO)
+            xbmcgui.Dialog().notification("Update started", "Scraping in progress...", xbmcgui.NOTIFICATION_INFO)
 
-            wait = xbmcgui.Dialog().yesno("Esperar finalización", "¿Querés esperar hasta que termine el scraping?")
+            wait = xbmcgui.Dialog().yesno("Wait for completion", "Do you want to wait until scraping finishes?")
             if wait:
                 for _ in range(15):
                     status = requests.get(f"{BASE_URL}/status", timeout=5).json()
                     if not status.get("scraping", {}).get("running", False):
-                        xbmcgui.Dialog().notification("Scraping completo", "Las fuentes fueron actualizadas", xbmcgui.NOTIFICATION_INFO)
+                        xbmcgui.Dialog().notification("Scraping complete", "Sources have been updated", xbmcgui.NOTIFICATION_INFO)
                         return
                     time.sleep(2)
-                xbmcgui.Dialog().notification("Scraping en curso", "Aún no finalizó después de 30s", xbmcgui.NOTIFICATION_WARNING)
+                xbmcgui.Dialog().notification("Scraping in progress", "Still not finished after 30s", xbmcgui.NOTIFICATION_WARNING)
 
         elif response.status_code == 409:
-            xbmcgui.Dialog().notification("Ya en curso", "Ya hay un scraping en ejecución", xbmcgui.NOTIFICATION_WARNING)
+            xbmcgui.Dialog().notification("Already running", "A scraping job is already in progress", xbmcgui.NOTIFICATION_WARNING)
         else:
-            xbmcgui.Dialog().notification("Error", f"Código inesperado: {response.status_code}", xbmcgui.NOTIFICATION_ERROR)
+            xbmcgui.Dialog().notification("Error", f"Unexpected code: {response.status_code}", xbmcgui.NOTIFICATION_ERROR)
     except requests.exceptions.Timeout:
-        xbmcgui.Dialog().notification("Timeout", "El servidor no respondió", xbmcgui.NOTIFICATION_ERROR)
+        xbmcgui.Dialog().notification("Timeout", "The server did not respond", xbmcgui.NOTIFICATION_ERROR)
     except requests.exceptions.ConnectionError:
-        xbmcgui.Dialog().notification("Conexión fallida", "No se pudo conectar al backend", xbmcgui.NOTIFICATION_ERROR)
+        xbmcgui.Dialog().notification("Connection failed", "Could not connect to the backend", xbmcgui.NOTIFICATION_ERROR)
     except Exception as e:
         xbmcgui.Dialog().notification("Error", str(e), xbmcgui.NOTIFICATION_ERROR)
 
 def list_sites():
     url = f"{sys.argv[0]}?refresh=1"
-    li = xbmcgui.ListItem(label="[Actualizar fuentes 📡]")
+    li = xbmcgui.ListItem(label="[Refresh sources 📡]")
     xbmcplugin.addDirectoryItem(handle=HANDLE, url=url, listitem=li, isFolder=False)
 
     data = fetch_metadata()
@@ -83,7 +83,7 @@ def list_channels(site_name):
     data = fetch_metadata()
     site_data = next((s for s in data if s["site"] == site_name), None)
     if not site_data:
-        xbmcgui.Dialog().notification("Error", f"No se encontró sitio: {site_name}")
+        xbmcgui.Dialog().notification("Error", f"Site not found: {site_name}")
         return
 
     for ch in site_data["channels"]:

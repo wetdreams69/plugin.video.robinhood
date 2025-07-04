@@ -1,7 +1,7 @@
-<addon id="plugin.video.librefutboltv"
-       name="LibreFútbolTV"
+<addon id="plugin.video.robinhood"
+       name="Robinhood"
        version="1.1.0"
-       provider-name="Osvaldo Gioia">
+       provider-name="wetdreams69">
     <requires>
         <import addon="xbmc.python" version="3.0.0"/>
     </requires>
@@ -10,8 +10,8 @@
         <provides>video</provides>
     </extension>
     <extension point="xbmc.addon.metadata">
-        <summary>Addon para ver canales desde librefutboltv.su</summary>
-        <description>Accede a los streams desde un backend local o remoto configurable.</description>
+        <summary>Addon to watch channels from Robinhood</summary>
+        <description>Access streams from a local or remote backend compatible with [rh-server](https://github.com/wetdreams69/rh-server).</description>
         <platform>all</platform>
     </extension>
 </addon>

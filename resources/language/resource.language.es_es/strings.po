@@ -1,0 +1,35 @@
+msgid ""
+msgstr ""
+"Language-Team: Spanish\n"
+"Language: es_ES\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgctxt "#30000"
+msgid "Refresh sources 📡"
+msgstr "Actualizar fuentes 📡"
+
+msgctxt "#30001"
+msgid "Timeout"
+msgstr "Tiempo agotado"
+
+msgctxt "#30002"
+msgid "The server did not respond in time"
+msgstr "El servidor no respondió a tiempo"
+
+msgctxt "#30003"
+msgid "Connection failed"
+msgstr "Conexión fallida"
+
+msgctxt "#30004"
+msgid "Could not connect to the backend"
+msgstr "No se pudo conectar al backend"
+
+msgctxt "#30005"
+msgid "Error"
+msgstr "Error"
+
+msgctxt "#30006"
+msgid "Error fetching metadata: {error}"
+msgstr "Error al obtener metadata: {error}"
