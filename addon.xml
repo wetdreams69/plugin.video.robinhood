@@ -14,5 +14,6 @@
         <summary>Addon to watch channels from Robinhood</summary>
         <description>Access streams from a local or remote backend compatible with [rh-server](https://github.com/wetdreams69/rh-server).</description>
         <platform>all</platform>
+        <icon>icon.png</icon>
     </extension>
 </addon>
