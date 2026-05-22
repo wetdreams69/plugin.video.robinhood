@@ -1,0 +1,15 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Robinhood\n"
+"Language: es_ES\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgctxt "#30001"
+msgid "Maintenance"
+msgstr "Mantenimiento"
+
+msgctxt "#30002"
+msgid "Clear Cache"
+msgstr "Limpiar Cache"
