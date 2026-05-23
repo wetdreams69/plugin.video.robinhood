@@ -16,8 +16,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set repository name
-        run: echo "REPO_NAME=${GITHUB_REPOSITORY##*/}" >> $GITHUB_ENV
+      - name: Set variables
+        run: |
+          echo "REPO_NAME=${GITHUB_REPOSITORY##*/}" >> $GITHUB_ENV
+          echo "VERSION=${GITHUB_REF_NAME}" >> $GITHUB_ENV
+          echo "ZIP_NAME=${GITHUB_REPOSITORY##*/}-${GITHUB_REF_NAME}.zip" >> $GITHUB_ENV
 
       - name: Build zip
         run: |
@@ -32,14 +35,14 @@ jobs:
             ./ build/${REPO_NAME}/
 
           cd build
-          zip -r ../${REPO_NAME}.zip ${REPO_NAME}
+          zip -r ../${ZIP_NAME} ${REPO_NAME}
           cd ..
 
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create "${GITHUB_REF_NAME}" \
-            --title "${GITHUB_REF_NAME}" \
-            --notes "Automatic release for ${GITHUB_REF_NAME}" \
-            "${REPO_NAME}.zip"
+          gh release create "${VERSION}" \
+            --title "${VERSION}" \
+            --notes "Automatic release for ${VERSION}" \
+            "${ZIP_NAME}"
