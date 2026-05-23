@@ -1,0 +1,11 @@
+MagicMock/
+__pycache__/
+*.py[cod]
+*$py.class
+resolver_report.md
+.pytest_cache/
+.vscode/
+.idea/
+*.zip
+scratch/
+.DS_Store
