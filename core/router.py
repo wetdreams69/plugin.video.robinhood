@@ -42,13 +42,12 @@ def play_video(url):
         return
 
     real_url, headers, clearkey = _parse_resolved_url(resolved)
+    log(f'[Robinhood] Resolved -> {real_url}')
 
     if not headers and not clearkey:
-        headers = _generate_default_headers(url)
+        headers = _probe_and_fix_headers(real_url, _generate_default_headers(url))
 
-    final_headers = _probe_and_fix_headers(real_url, headers)
-
-    setup_item(real_url, final_headers, clearkey)
+    setup_item(real_url, headers, clearkey)
     tracker.monitor()
 
 
@@ -116,7 +115,7 @@ def _header_str_to_dict(headers_str):
     for part in headers_str.split('&'):
         if '=' in part:
             k, v = part.split('=', 1)
-            d[k] = v
+            d[k] = urllib.parse.unquote(v)
     return d
 
 

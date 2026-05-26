@@ -1,30 +1,51 @@
 import time
+from urllib.parse import urlparse
 import core.constants as const
 from core.http_client import HttpClient
 from core.cache import cache
 from kodi.api import ListItem, add_directory_item, set_content, end_of_directory, log
-from providers.streamx550.constants import AGENDA_URL, HEADERS, CACHE_KEY, CACHE_TTL
+from providers.streamx550.constants import CANONICAL_URL, BASE_HEADERS, CACHE_KEY, CACHE_TTL, DOMAIN_CACHE_KEY, DOMAIN_CACHE_TTL
 
 _http = HttpClient()
 
-def _fetch_agenda():
-    nocache = int(time.time() * 1000)
-    url = f"{AGENDA_URL}?nocache={nocache}"
-    resp = _http.get(url, headers=HEADERS, timeout=10)
-    resp.raise_for_status()
-    return resp.json()
+def _resolve_active_domain():
+    cached = cache.get(DOMAIN_CACHE_KEY)
+    if cached:
+        return cached
+    try:
+        resp = _http.session.head(CANONICAL_URL, headers=BASE_HEADERS, timeout=8, allow_redirects=True)
+        domain = f"{urlparse(resp.url).scheme}://{urlparse(resp.url).netloc}"
+        cache.set(DOMAIN_CACHE_KEY, domain, ttl=DOMAIN_CACHE_TTL)
+        log(f'[StreamX550] Active domain: {domain}')
+        return domain
+    except Exception as e:
+        log(f'[StreamX550] Domain resolution failed: {e}')
+        return 'https://streamx550.com'
 
-def _parse_agenda(data):
+def _fetch_agenda():
+    domain = _resolve_active_domain()
+    agenda_url = f"{domain}/json/agenda550.json"
+    headers = dict(BASE_HEADERS)
+    headers['Referer'] = domain + '/'
+    nocache = int(time.time() * 1000)
+    resp = _http.get(f"{agenda_url}?nocache={nocache}", headers=headers, timeout=10)
+    resp.raise_for_status()
+    return resp.json(), domain
+
+def _parse_agenda(data, domain):
     events = {}
     for item in data:
         title = item.get('title', 'Unknown').strip()
         time_str = item.get('time', '').strip()
         link = item.get('link', '')
         status = item.get('status', '')
-        
+
         if not link:
             continue
-            
+
+        parsed = urlparse(link)
+        link = f"{domain}{parsed.path}?{parsed.query}" if parsed.query else f"{domain}{parsed.path}"
+
         key = f"{time_str} - {title}"
         if key not in events:
             events[key] = {
@@ -33,7 +54,7 @@ def _parse_agenda(data):
                 'status': status,
                 'options': []
             }
-            
+
         channel = link.split('channel=')[-1] if 'channel=' in link else 'Source'
         events[key]['options'].append({'name': channel, 'url': link})
 
@@ -43,13 +64,13 @@ def _get_events():
     cached_data = cache.get(CACHE_KEY)
     if cached_data:
         return cached_data
-        
-    data = _fetch_agenda()
-    events = _parse_agenda(data)
-    
+
+    data, domain = _fetch_agenda()
+    events = _parse_agenda(data, domain)
+
     if events:
         cache.set(CACHE_KEY, events, ttl=CACHE_TTL)
-        
+
     return events
 
 class StreamX550Provider:
