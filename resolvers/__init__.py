@@ -10,9 +10,9 @@ from .angulismo import resolve as resolve_angulismo
 from .elcanaldeportivo import resolve as resolve_elcanaldeportivo
 from .la14hd import resolve as resolve_la14hd
 from .generic_extract import resolve as resolve_generic
+from .proveseat import resolve as resolve_proveseat
 from .capoplay import resolve as resolve_capoplay
 
-# Registry of resolvers: (match_function, resolve_function)
 RESOLVER_REGISTRY = [
     (lambda u: "angulismo" in u or "cvattv" in u or "gigared" in u, resolve_angulismo),
     (lambda u: "bolaloca" in u, resolve_bolaloca),
@@ -22,7 +22,8 @@ RESOLVER_REGISTRY = [
     (lambda u: "hoca6" in u or "hoca8" in u or "cdn" in u, resolve_hoca6),
     (lambda u: "nebunexa" in u or "bestleague.world" in u, resolve_nebunexa),
     (lambda u: "capoplay.net" in u or "capo8play" in u, resolve_capoplay),
-    (lambda u: "streamtp" in u or "streamx550" in u or "domainmy" in u or "domainplayer" in u or "streamvv" in u or "streamzs" in u, resolve_streamtp),
+    (lambda u: "streamtp" in u or "streamx" in u or "domainmy" in u or "domainplayer" in u or "streamvv" in u or "streamzs" in u, resolve_streamtp),
+    (lambda u: "proveseat" in u or "18zone" in u, resolve_proveseat),
     (lambda u: "github.io" in u, resolve_pracanes),
     (lambda u: "welivesports" in u or "streamfree" in u or "embedsports" in u or "deporte-libre" in u or "tarjetarojatv" in u or "rojadirecta.re" in u, resolve_generic),
 ]
@@ -30,19 +31,20 @@ RESOLVER_REGISTRY = [
 def resolve_url(url, max_hops=3):
     original_url = url
     for _ in range(max_hops):
-        # 1. Clean Proxy Prefixes
         url = _strip_proxies(url)
-        
-        # 2. Check Cache
-        cached = cache.get(f'resolve:{url}')
+        base_url = url.split('|')[0]
+        if ".m3u8" in base_url or ".mpd" in base_url:
+            break
+        cached = cache.get(f'resolve:{base_url}')
         if cached:
-            log(f'[Robinhood] Using cached resolution: {url}')
+            log(f'[Robinhood] Using cached resolution: {base_url}')
             return cached
 
-        # 3. Find Resolver
-        resolved = url
+        inherited_headers = url[len(base_url):] if '|' in url else ''
+
+        resolved = base_url
         for matcher, resolver_func in RESOLVER_REGISTRY:
-            if matcher(url):
+            if matcher(base_url):
                 try:
                     resolved = resolver_func(url)
                 except Exception as e:
@@ -50,21 +52,21 @@ def resolve_url(url, max_hops=3):
                     resolved = None
                 break
         else:
-            # No resolver matched, we are done
             break
-            
-        if not resolved or resolved == url:
+
+        if not resolved or resolved == base_url:
+            if inherited_headers:
+                url = base_url + inherited_headers
             break
-            
-        # Avoid loops if the base URL didn't change (only headers added)
-        if '|' in resolved and resolved.split('|')[0] == url.split('|')[0]:
+
+        if '|' in resolved and resolved.split('|')[0] == base_url:
             url = resolved
             break
-            
+
         log(f'[Robinhood] Hop {_+1}: {resolved}')
         url = resolved
 
-    cache.set(f'resolve:{original_url}', url, ttl=3600)
+    cache.set(f'resolve:{original_url}', url, ttl=300)
     return url
 
 def _strip_proxies(url):

@@ -18,18 +18,13 @@ class CapoPlayResolver:
             }
             resp = self.http.get(url, headers=headers, timeout=8, verify=False)
             html = resp.text if hasattr(resp, 'text') else resp
-            
-            # extract fid from capo js configuration
+
             fid_match = re.search(r'fid\s*=\s*["\']([^"\']+)["\']', html)
             if fid_match:
                 fid = fid_match.group(1)
                 capo_url = f"https://capo8play.com/capo.php?player=desktop&live={fid}"
-                
-                headers['Referer'] = url
                 resp2 = self.http.get(capo_url, headers=headers, timeout=8, verify=False)
                 html2 = resp2.text if hasattr(resp2, 'text') else resp2
-                
-                # Extract the obfuscated m3u8 array pattern
                 pattern = r'\(\s*(\[[^\]]+\])\s*\.join\(["\']["\']'
                 for match in re.finditer(pattern, html2):
                     array_str = match.group(1)
@@ -37,6 +32,15 @@ class CapoPlayResolver:
                     cand = ''.join(chars).replace('\\/', '/')
                     if cand.startswith('http') and '.m3u8' in cand:
                         return f"{cand}|Referer={urllib.parse.quote('https://capo8play.com/')}&Origin=https://capo8play.com"
+
+            iframe_match = re.search(r'<iframe[^>]+src=["\']([^"\']+)["\']', html, re.IGNORECASE)
+            if iframe_match:
+                iframe_src = iframe_match.group(1)
+                if not iframe_src.startswith('http'):
+                    p = urlparse(url)
+                    base = f"{p.scheme}://{p.netloc}"
+                    iframe_src = base + iframe_src if iframe_src.startswith('/') else base + '/' + iframe_src
+                return iframe_src + f'|Referer={url}'
         except Exception:
             pass
         return url
