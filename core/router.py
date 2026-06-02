@@ -20,7 +20,6 @@ def build_url(query):
 def list_main_menu():
     for provider in PROVIDERS:
         list_item = ListItem(label=provider.label)
-        list_item.set_art({'thumb': provider.icon, 'icon': provider.icon})
         list_item.getVideoInfoTag().setTitle(provider.label)
         url = build_url({'action': 'source', 'provider': provider.id})
         add_directory_item(const.ADDON_HANDLE, url, list_item, isFolder=True)
